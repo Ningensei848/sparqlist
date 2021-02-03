@@ -1,16 +1,23 @@
 # Dockerfile for https://github.com/dbcls/sparqlist
 
-FROM node:14
+FROM node:lts
 
-ENV PORT 3000
-ENV ADMIN_PASSWORD sparqlist
-ENV ROOT_PATH=/sparqlist/
+ARG ADMIN_PASSWORD
+ENV ADMIN_PASSWORD $ADMIN_PASSWORD
+ARG ROOT_PATH
+ENV ROOT_PATH $ROOT_PATH
+ARG PORT
+ENV PORT $PORT
 
 RUN useradd --create-home --home-dir /app app
 
 USER app
 WORKDIR /app
 COPY --chown=app:app . .
+#COPY . .
 
-RUN npm ci --production && npm run build
-CMD npm start
+RUN echo `which git`
+RUN rm -rf .git && /usr/bin/git init && /usr/bin/git config --local url."https://".insteadOf git://
+#RUN npm cache clean --force
+RUN yarn install --frozen-lockfile && yarn run build
+CMD yarn start
